@@ -1,6 +1,3 @@
-/**
- * Created by 1 on 30.08.2014.
- */
 //Присваиваем каждой фигуре свой код
 var WHITE_KING = 100;
 var WHITE_QUEEN = 90;
