@@ -73,3 +73,7 @@
 #board .column .EMPTY {
     background: none;
 }
+
+#board .column .FREE {
+    background: url('../images/free.png');
+}

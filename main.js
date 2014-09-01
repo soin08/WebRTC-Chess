@@ -14,14 +14,16 @@ var BLACK_KNIGHT = -WHITE_KNIGHT;
 var BLACK_PAWN = -WHITE_PAWN;
 
 //Расставляем фигурки
-var board = [[BLACK_ROOK, BLACK_KNIGHT, BLACK_BISHOP, BLACK_QUEEN, BLACK_KING, BLACK_BISHOP, BLACK_KNIGHT, BLACK_ROOK],
+var board = [
+    [BLACK_ROOK, BLACK_KNIGHT, BLACK_BISHOP, BLACK_QUEEN, BLACK_KING, BLACK_BISHOP, BLACK_KNIGHT, BLACK_ROOK],
     [BLACK_PAWN, BLACK_PAWN, BLACK_PAWN, BLACK_PAWN, BLACK_PAWN, BLACK_PAWN, BLACK_PAWN, BLACK_PAWN],
     [0,0,0,0,0,0,0,0],
     [0,0,0,0,0,0,0,0],
     [0,0,0,0,0,0,0,0],
     [0,0,0,0,0,0,0,0],
     [WHITE_PAWN, WHITE_PAWN, WHITE_PAWN, WHITE_PAWN, WHITE_PAWN, WHITE_PAWN, WHITE_PAWN, WHITE_PAWN],
-    [WHITE_ROOK, WHITE_KNIGHT, WHITE_BISHOP, WHITE_QUEEN, WHITE_KING, WHITE_BISHOP, WHITE_KNIGHT, WHITE_ROOK]];
+    [WHITE_ROOK, WHITE_KNIGHT, WHITE_BISHOP, WHITE_QUEEN, WHITE_KING, WHITE_BISHOP, WHITE_KNIGHT, WHITE_ROOK]
+];
 
 //Возвращаем названия фигур CSS
 function getPieceName(pieceValue){
@@ -75,6 +77,25 @@ $(function(){
 
     drawBoard(board);
 
+    var pieceSelected = false
+
+    $(".WHITE_PAWN").on("click", function(e) {
+
+        if(pieceSelected) {
+        
+            var rowColumn = getPieceCords(this),
+                row =rowColumn[0],
+                column = rowColumn[1];
+
+            showPathPawn(row, column)
+        }
+        else {
+            eraseFree()
+        }
+
+        pieceSelected = !pieceSelected
+    })
+
 });
 
 function drawBoard(board){
@@ -90,4 +111,57 @@ function drawBoard(board){
         str += '</div>';
     }
     $('#board').append(str);
+}
+
+function getCell(i, j) {
+    //console.log($(".row").get(i).find(".column"))
+    var row = $(".row").get(i)
+    var column = $(row).find(".column").get(j)
+    var cell = $(column).children()
+    
+    return cell
+}
+
+function highlightFree(i, j) {
+    console.log("adding FREE to "+i+" "+j)
+    $(getCell(i, j)).addClass("FREE")
+}
+
+function eraseFree() {
+    var cells = $(".row .column").children()
+    $(cells).each(function(){
+       $(this).removeClass("FREE")
+    })
+}
+
+function highlightTaken(i, j) {
+    $(getCell(i, j)).addClass("TAKEN")
+}
+
+function getPieceCords(piece) {
+    var column = $(piece).parent()
+    var row = $(column).parent()
+    var columnIndex = $(row).children().index(column)
+    var rowIndex = $(".row").index(row)
+    return [rowIndex, columnIndex]
+}
+
+function inBounds(i, j) {
+    if (i >= 0 && j>=0 && i<=8 && j<=8) return true
+    else return false
+}
+
+
+function showPathPawn(i, j) {   
+
+    if (inBounds(i-1, j+1)) {
+        if (board[i-1][j+1] == 0) { 
+            highlightFree(i-1, j+1)}
+        else highlightTaken(i-1, j+1)
+    }
+    
+    if (inBounds(i-1, j-1)) {
+        if (board[i-1][j-1] == 0) highlightFree(i-1, j-1)
+        else highlightTaken(i-1, j-1)
+    }
 }
