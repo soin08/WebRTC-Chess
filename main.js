@@ -77,23 +77,40 @@ $(function(){
 
     drawBoard(board);
 
-    var pieceSelected = false
+    var selectedPiece = null
 
-    $(".WHITE_PAWN").on("click", function(e) {
+    $("#board").on("click", ".WHITE_PAWN", function(e) {
 
-        if(pieceSelected) {
-        
-            var rowColumn = getPieceCords(this),
+        eraseFree() //стереть подсветку
+
+        if(selectedPiece == this) { //если нажали на пешку, на которую нажимали в прошлый раз          
+            selectedPiece = null          
+        }
+        else { //если нажали на новую пешку -- подсветить возможные ходы
+
+            selectedPiece = this
+
+            var rowColumn = getPieceCords(this), //получить координаты пешки в матрице
                 row =rowColumn[0],
                 column = rowColumn[1];
 
             showPathPawn(row, column)
         }
-        else {
-            eraseFree()
-        }
 
-        pieceSelected = !pieceSelected
+    })
+
+    $("#board").on("click", ".FREE", function(e) {
+
+       var rowColumn = getPieceCords(this)
+       movePieceTo(selectedPiece, rowColumn[0], rowColumn[1])
+       eraseFree()        
+
+    })
+
+     $("#board").on("click", ".EMPTY", function(e) {
+
+       eraseFree()        
+
     })
 
 });
@@ -135,7 +152,7 @@ function eraseFree() {
 }
 
 function highlightTaken(i, j) {
-    $(getCell(i, j)).addClass("TAKEN")
+    //$(getCell(i, j)).addClass("TAKEN")
 }
 
 function getPieceCords(piece) {
@@ -149,6 +166,30 @@ function getPieceCords(piece) {
 function inBounds(i, j) {
     if (i >= 0 && j>=0 && i<=8 && j<=8) return true
     else return false
+}
+
+function movePieceTo(piece, i, j) {
+    if (board[i][j] == 0 && inBounds(i, j)) {        
+        var rowColumn = getPieceCords(piece),
+            row = rowColumn[0],
+            column = rowColumn[1],
+            cell = getCell(i, j),
+            pieceClass = $(piece).attr("class");
+
+        console.log("pieceClass: "+pieceClass)
+
+        console.log("moving piece to: "+i+" "+j)
+
+        board[i][j] = board[row][column]
+        board[row][column] = 0
+
+        $(getCell(row, column)).removeClass(pieceClass).addClass("EMPTY") //empty the old cell
+
+        $(cell).removeClass("EMPTY").addClass(pieceClass) //place the piece to the new cell
+    }
+    else {
+        console.log("Invalid piece coords!")
+    }
 }
 
 
