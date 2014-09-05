@@ -138,22 +138,22 @@ function drawBoard(board) { //рисует доску, ставит фигурк
 
 function getCell(i, j) { //получить html клетки на основе ее координат в матрице
 
-    var row = $(".row").get(i)
-    var column = $(row).find(".column").get(j)
-    var cell = $(column).children()
+    var row = $(".row").get(i);
+    var column = $(row).find(".column").get(j);
+    var cell = $(column).children();
     
     return cell
 }
 
 function highlightFree(i, j) { //подсветить ячейку зеленым (свободная)
-    console.log("adding FREE to "+i+" "+j)
-    $(getCell(i, j)).addClass("FREE")
+    console.log("adding FREE to "+i+" "+j);
+    $(getCell(i, j)).addClass("FREE");
 }
 
 function eraseFree() { //убрать зеленую подсветку со всех клеток
-    var cells = $(".row .column").children()
+    var cells = $(".row .column").children();
     $(cells).each(function(){
-       $(this).removeClass("FREE")
+       $(this).removeClass("FREE");
     })
 }
 
@@ -162,14 +162,14 @@ function highlightTaken(i, j) {
 }
 
 function getPieceCords(piece) { //получить координаты ячейки в матрице по ее html. Возвращает [строка, столбец]
-    var column = $(piece).parent()
-    var row = $(column).parent()
-    var columnIndex = $(row).children().index(column)
-    var rowIndex = $(".row").index(row)
+    var column = $(piece).parent();
+    var row = $(column).parent();
+    var columnIndex = $(row).children().index(column);
+    var rowIndex = $(".row").index(row);
     return [rowIndex, columnIndex]
 }
 
-function inBounds(i, j) { //валидны ли координаты
+function inBounds(i, j) { //валидны ли координаты. находятся ли они на доске
     return (i >= 0 && j>=0 && i<=7 && j<=7)
 }
 
@@ -185,26 +185,34 @@ function movePieceTo(piece, i, j) { //передвинуть фигуру piece 
             cell = getCell(i, j),
             pieceClass = $(piece).attr("class");
 
-        board[i][j] = board[row][column]
-        board[row][column] = 0
+        board[i][j] = board[row][column];
+        board[row][column] = 0;
 
-        $(getCell(row, column)).removeClass(pieceClass).addClass("EMPTY") //empty the old cell
+        $(getCell(row, column)).removeClass(pieceClass).addClass("EMPTY"); //empty the old cell
 
-        $(cell).removeClass("EMPTY").addClass(pieceClass) //place the piece to the new cell
+        $(cell).removeClass("EMPTY").addClass(pieceClass); //place the piece to the new cell
     }
     else {
-        console.log("Invalid piece coords!")
+        console.log("Invalid piece coords!");
     }
 }
 
 function showPathPawn(i, j) { //подсветить путь для пешки
-
-    if (inBounds(i-1, j+1)) {
-        if (isCellEmpty(i-1, j+1)) highlightFree(i-1, j+1)
-    }
+    if (i===6){
+        var row = i-1,
+        column = j;
     
-    if (inBounds(i-1, j-1)) {
-        if (isCellEmpty(i-1, j-1)) highlightFree(i-1, j-1)
+    while (inBounds(row, column) && row >= i-2) { //подсветим путь вперед
+        if (isCellEmpty(row, column)) {           
+            highlightFree(row, column);
+             row--;
+        }
+        else break;
+    }
+    } else {
+        if (inBounds(i-1, j)) {
+        if (isCellEmpty(i-1, j)) {highlightFree(i-1, j);}
+    }
     }
 }
 
@@ -214,43 +222,75 @@ function showPathRook(i, j) { //подсветить путь для ладьи
     
     while (inBounds(row, column) && row >= 0) { //подсветим путь вперед
         if (isCellEmpty(row, column)) {           
-            highlightFree(row, column)
-             row--
+            highlightFree(row, column);
+             row--;
         }
-        else break
+        else break;
     }
 
-    row = i + 1
+    row = i + 1;
     while (inBounds(row, column) && row <= 7) { //подсветим путь назад
         if (isCellEmpty(row, column)) {           
-            highlightFree(row, column)
-            row++
+            highlightFree(row, column);
+            row++;
         }
-        else break
+        else break;
     }
 
-    row = i
-    column = j-1
+    row = i;
+    column = j-1;
     while (inBounds(row, column) && column >= 0) { //подсветим путь влево
         if (isCellEmpty(row, column)) {           
-            highlightFree(row, column)
-            column--
+            highlightFree(row, column);
+            column--;
         }
-        else break
+        else break;
     }
 
-    column = j+1
+    column = j+1;
     while (inBounds(row, column) && column <= 7) { //подсветим путь вправо
         if (isCellEmpty(row, column)) {           
-            highlightFree(row, column)
-            column++
+            highlightFree(row, column);
+            column++;
         }
-        else break
+        else break;
     }    
 }
+function showPathKnight (i, j) { //Подсветить ход коня
+    if (inBounds(i-2, j-1)) {
+        if (isCellEmpty(i-2, j-1)) {highlightFree(i-2, j-1);}
+    }
 
-var showPathMap = [] // для удобного доступа к функциям подсветки пути для разных фигур
+    if (inBounds(i-1, j-2)) {
+        if (isCellEmpty(i-1, j-2)) {highlightFree(i-1, j-2);}
+    }
+    if (inBounds(i-2, j+1)) {
+        if (isCellEmpty(i-2, j+1)) {highlightFree(i-2, j+1);}
+    }
+
+    if (inBounds(i-1, j+2)) {
+        if (isCellEmpty(i-1, j+2)) {highlightFree(i-1, j+2);}
+    }
+    if (inBounds(i+2, j-1)) {
+        if (isCellEmpty(i+2, j-1)) {highlightFree(i+2, j-1);}
+    }
+
+    if (inBounds(i+1, j-2)) {
+        if (isCellEmpty(i+1, j-2)) {highlightFree(i+1, j-2);}
+    }
+    if (inBounds(i+2, j+1)) {
+        if (isCellEmpty(i+2, j+1)) {highlightFree(i+2, j+1);}
+    }
+
+    if (inBounds(i+1, j+2)) {
+        if (isCellEmpty(i+1, j+2)) {highlightFree(i+1, j+2);}
+    }
+}
+
+
+var showPathMap = []; // для удобного доступа к функциям подсветки пути для разных фигур
                      // не нужно подписываться на клик каждого типа фигурки в отдельности -- 
                      // при клике на любую фигурку просто определяем ее тип (см.  $("#board").on("click", ".row .column > div"...)
-showPathMap[WHITE_PAWN] = showPathPawn
-showPathMap[WHITE_ROOK] = showPathRook
+showPathMap[WHITE_PAWN] = showPathPawn;
+showPathMap[WHITE_ROOK] = showPathRook;
+showPathMap[WHITE_KNIGHT] = showPathKnight;
