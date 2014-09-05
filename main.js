@@ -287,6 +287,175 @@ function showPathKnight (i, j) { //Подсветить ход коня
     }
 }
 
+function showPathBishop(i, j) { // Подсветить ход слона
+    var row = i-1,
+        column = j-1;
+
+    while (inBounds(row, column) && row >= 0) { //подсветка влево и вверх
+        if (isCellEmpty(row, column)) {           
+            highlightFree(row, column);
+             row--;
+             column--;
+        }
+        else break;
+    }
+
+    row = i-1;
+    column = j+1;
+
+    while (inBounds(row, column) && row >= 0) { //подсветка вправо и вверх
+        if (isCellEmpty(row, column)) {           
+            highlightFree(row, column);
+             row--;
+             column++;
+        }
+        else break;
+    }
+
+    row = i+1;
+    column = j-1;
+
+        while (inBounds(row, column) && row <= 7) { //подсветка влево и вверх
+        if (isCellEmpty(row, column)) {           
+            highlightFree(row, column);
+             row++;
+             column--;
+        }
+        else break;
+    }
+
+    row = i+1;
+    column =j+1;
+
+        while (inBounds(row, column) && row <= 7) { //подсветка влево и вверх
+        if (isCellEmpty(row, column)) {           
+            highlightFree(row, column);
+             row++;
+             column++;
+        }
+        else break;
+    }
+}
+
+function showPathQueen (i, j) { //Подсветка королевы
+    var row = i-1,
+        column = j-1;
+
+    while (inBounds(row, column) && row >= 0) { //подсветка влево и вверх
+        if (isCellEmpty(row, column)) {           
+            highlightFree(row, column);
+             row--;
+             column--;
+        }
+        else break;
+    }
+
+    row = i-1;
+    column = j+1;
+
+    while (inBounds(row, column) && row >= 0) { //подсветка вправо и вверх
+        if (isCellEmpty(row, column)) {           
+            highlightFree(row, column);
+             row--;
+             column++;
+        }
+        else break;
+    }
+
+    row = i+1;
+    column = j-1;
+
+        while (inBounds(row, column) && row <= 7) { //подсветка влево и вверх
+        if (isCellEmpty(row, column)) {           
+            highlightFree(row, column);
+             row++;
+             column--;
+        }
+        else break;
+    }
+
+    row = i+1;
+    column =j+1;
+
+        while (inBounds(row, column) && row <= 7) { //подсветка влево и вверх
+        if (isCellEmpty(row, column)) {           
+            highlightFree(row, column);
+             row++;
+             column++;
+        }
+        else break;
+    }
+
+    row = i-1,
+        column = j;
+    
+    while (inBounds(row, column) && row >= 0) { //подсветим путь вперед
+        if (isCellEmpty(row, column)) {           
+            highlightFree(row, column);
+             row--;
+        }
+        else break;
+    }
+
+    row = i + 1;
+    while (inBounds(row, column) && row <= 7) { //подсветим путь назад
+        if (isCellEmpty(row, column)) {           
+            highlightFree(row, column);
+            row++;
+        }
+        else break;
+    }
+
+    row = i;
+    column = j-1;
+    while (inBounds(row, column) && column >= 0) { //подсветим путь влево
+        if (isCellEmpty(row, column)) {           
+            highlightFree(row, column);
+            column--;
+        }
+        else break;
+    }
+
+    column = j+1;
+    while (inBounds(row, column) && column <= 7) { //подсветим путь вправо
+        if (isCellEmpty(row, column)) {           
+            highlightFree(row, column);
+            column++;
+        }
+        else break;
+    }    
+}
+
+function showPathKing (i, j){
+    if (inBounds(i-1, j)) {
+        if (isCellEmpty(i-1, j)) {highlightFree(i-1, j);}
+    }
+
+    if (inBounds(i+1, j)) {
+        if (isCellEmpty(i+1, j)) {highlightFree(i+1, j);}
+    }
+    if (inBounds(i, j+1)) {
+        if (isCellEmpty(i, j+1)) {highlightFree(i, j+1);}
+    }
+
+    if (inBounds(i, j-1)) {
+        if (isCellEmpty(i, j-1)) {highlightFree(i, j-1);}
+    }
+    if (inBounds(i-1, j-1)) {
+        if (isCellEmpty(i-1, j-1)) {highlightFree(i-1, j-1);}
+    }
+
+    if (inBounds(i+1, j+1)) {
+        if (isCellEmpty(i+1, j+1)) {highlightFree(i+1, j+1);}
+    }
+    if (inBounds(i+1, j-1)) {
+        if (isCellEmpty(i+1, j-1)) {highlightFree(i+1, j-1);}
+    }
+
+    if (inBounds(i-1, j+1)) {
+        if (isCellEmpty(i-1, j+1)) {highlightFree(i-1, j+1);}
+    }
+}
 
 var showPathMap = []; // для удобного доступа к функциям подсветки пути для разных фигур
                      // не нужно подписываться на клик каждого типа фигурки в отдельности -- 
@@ -294,3 +463,6 @@ var showPathMap = []; // для удобного доступа к функци�
 showPathMap[WHITE_PAWN] = showPathPawn;
 showPathMap[WHITE_ROOK] = showPathRook;
 showPathMap[WHITE_KNIGHT] = showPathKnight;
+showPathMap[WHITE_BISHOP] = showPathBishop;
+showPathMap[WHITE_QUEEN] = showPathQueen;
+showPathMap[WHITE_KING] = showPathKing;
