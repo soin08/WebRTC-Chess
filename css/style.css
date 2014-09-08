@@ -16,6 +16,10 @@
     background: #6c903f;
 }
 
+#board .column.RED {
+    background: #E71717;
+}
+
 #board .column div {
     height: 50px;
     width: 50px;
@@ -76,4 +80,8 @@
 
 #board .column .FREE {
     background: url('../images/free.png');
+}
+
+#board .column .VICTIM {
+    background: url('../images/victim.png');
 }

@@ -16,10 +16,10 @@ var BLACK_PAWN = -WHITE_PAWN;
 //Расставляем фигурки
 var board = [
     [BLACK_ROOK, BLACK_KNIGHT, BLACK_BISHOP, BLACK_QUEEN, BLACK_KING, BLACK_BISHOP, BLACK_KNIGHT, BLACK_ROOK],
-    [BLACK_PAWN, BLACK_PAWN, BLACK_PAWN, BLACK_PAWN, BLACK_PAWN, BLACK_PAWN, BLACK_PAWN, BLACK_PAWN],
+    [0, BLACK_PAWN, BLACK_PAWN, BLACK_PAWN, BLACK_PAWN, BLACK_PAWN, BLACK_PAWN, BLACK_PAWN],
     [0,0,0,0,0,0,0,0],
     [0,0,0,0,0,0,0,0],
-    [0,0,0,0,0,0,0,0],
+    [0,0,0,0,0,BLACK_PAWN,0,0],
     [0,0,0,0,0,0,0,0],
     [WHITE_PAWN, WHITE_PAWN, WHITE_PAWN, WHITE_PAWN, WHITE_PAWN, WHITE_PAWN, WHITE_PAWN, WHITE_PAWN],
     [WHITE_ROOK, WHITE_KNIGHT, WHITE_BISHOP, WHITE_QUEEN, WHITE_KING, WHITE_BISHOP, WHITE_KNIGHT, WHITE_ROOK]
@@ -73,7 +73,8 @@ function getPieceName(pieceValue){
 }
 
 
-$(function(){
+
+$(function() {
 
     drawBoard(board);
 
@@ -85,41 +86,59 @@ $(function(){
 
             var rowColumn = getPieceCords(this)
             movePieceTo(selectedPiece, rowColumn[0], rowColumn[1]) //то двигаем ту фигуру в эту ячейу и стираем подсветку
-            eraseFree()  
+            cleanUp() 
         }
 
         else {
-            if (! $(this).hasClass("EMPTY")) { //если кликнули НЕ по пустой ячейке
+        	var column = $(this).parent() //если кликнули на жертве
+        	if ($(column).hasClass("RED"))  {//класс RED добавлен к родителю чтобы он не загораживал саму фигуру
+        		var victimIJ = getPieceCords(this)
+        		eatVictim(selectedPiece, victimIJ[0], victimIJ[1])
+        		//selectedPiece = null
+        		cleanUp()
+        	}
+        	else if (! $(this).hasClass("EMPTY")) { //если кликнули НЕ по пустой ячейке
 
-                eraseFree() //стереть подсветку (она присутствует в случе, если до этого кликнули по фигурке)
+	                cleanUp() //стереть подсветку (она присутствует в случе, если до этого кликнули по фигурке)
 
-                if(selectedPiece == this) { //если нажали на пешку, на которую нажимали в прошлый раз          
-                    selectedPiece = null          
-                }
-                else { //если нажали на новую фигурку -- подсветить возможные ходы
+	                if(selectedPiece == this) { //если нажали на пешку, на которую нажимали в прошлый раз          
+	                    selectedPiece = null          
+	                }
+	                else { //если нажали на новую фигурку -- подсветить возможные ходы
 
-                    selectedPiece = this
+	                    selectedPiece = this
 
-                    var rowColumn = getPieceCords(this), //получить координаты этой фигуры
-                        row =rowColumn[0],
-                        column = rowColumn[1];
+	                    var rowColumn = getPieceCords(this), //получить координаты этой фигуры
+	                        row =rowColumn[0],
+	                        column = rowColumn[1];
 
-                    
-                    if (showPathMap[board[row][column]]) { //если функция подсветки для данной фигурки уже есть (ПО ИДЕЕ ДОЛЖНЫ БЫТЬ ДЛЯ ВСЕХ)    
-                        showPathMap[board[row][column]](row, column) //подсветить ее путь
-                    }
-                    else { //иначе -- сказать, что нужно добавить ее!
-                        console.log("Добавьте функцию подсветки для фигуры "+getPieceName(board[row][column]))
-                    }
-                }
-            }
-            else { //иначе -- стереть подсветку в любом случае
-                eraseFree()   
-            }
+	                    
+	                    if (showPathMap[board[row][column]]) { //если функция подсветки для данной фигурки уже есть (ПО ИДЕЕ ДОЛЖНЫ БЫТЬ ДЛЯ ВСЕХ)    
+	                        showPathMap[board[row][column]](row, column) //подсветить ее путь
+	                    }
+	                    else { //иначе -- сказать, что нужно добавить ее!
+	                        console.log("Добавьте функцию подсветки для фигуры "+getPieceName(board[row][column]))
+	                    }
+	                }
+	            }
+	            else { //иначе -- стереть подсветку в любом случае
+	                cleanUp()   
+	            }
         }
         
     })
 })
+
+function containsObject(obj, list) {
+    var i;
+    for (i = 0; i < list.length; i++) {
+        if (list[i] === obj) {
+            return true;
+        }
+    }
+
+    return false;
+}
 
 function drawBoard(board) { //рисует доску, ставит фигурки
     var str = '';
@@ -136,16 +155,19 @@ function drawBoard(board) { //рисует доску, ставит фигурк
     $('#board').append(str);
 }
 
+function getColumn(i, j) {
+	var row = $(".row").get(i);
+    return $(row).find(".column").get(j);
+}
+
 function getCell(i, j) { //получить html клетки на основе ее координат в матрице
 
-    var row = $(".row").get(i);
-    var column = $(row).find(".column").get(j);
-    var cell = $(column).children();
-    
+    var cell = $(getColumn(i, j)).children();    
     return cell
 }
 
-function highlightFree(i, j) { //подсветить ячейку зеленым (свободная)
+
+function markFree(i, j) { //подсветить ячейку зеленым (свободная)
     console.log("adding FREE to "+i+" "+j);
     $(getCell(i, j)).addClass("FREE");
 }
@@ -157,7 +179,7 @@ function eraseFree() { //убрать зеленую подсветку со в�
     })
 }
 
-function highlightTaken(i, j) {
+function markTaken(i, j) {
     //$(getCell(i, j)).addClass("TAKEN")
 }
 
@@ -177,6 +199,40 @@ function isCellEmpty(i, j) { //пустая ли клетка
     return board[i][j] == 0
 }
 
+function emptyCell(i, j) {
+	var cell = getCell(i, j),
+        cellClass = $(cell).attr("class");
+	 
+	$(cell).removeClass(cellClass).addClass("EMPTY"); //empty the old cell
+	board[i][j] = 0
+}
+
+function isEnemy(i, j) {
+	return containsObject(board[i][j], [BLACK_QUEEN, BLACK_BISHOP, BLACK_PAWN, BLACK_KNIGHT, BLACK_ROOK, BLACK_KING])
+}
+
+function eatVictim(winnimgPiece, victimI, victimJ) {
+	
+	emptyCell(victimI, victimJ) //remove the victim
+	//INCREASE SCORE COUNTER HERE
+	movePieceTo(winnimgPiece, victimI, victimJ) 
+}
+
+function markVictim(i, j) {
+	$(getColumn(i, j)).addClass("RED")
+}
+
+function eraseAllVictims() {
+	$("#board .RED").each(function() {
+		$(this).removeClass("RED")
+	})
+}
+
+function cleanUp() {
+	eraseFree()
+	eraseAllVictims()
+}
+
 function movePieceTo(piece, i, j) { //передвинуть фигуру piece в координаты i, j
     if (isCellEmpty(i, j) && inBounds(i, j)) {        
         var rowColumn = getPieceCords(piece),
@@ -186,9 +242,8 @@ function movePieceTo(piece, i, j) { //передвинуть фигуру piece 
             pieceClass = $(piece).attr("class");
 
         board[i][j] = board[row][column];
-        board[row][column] = 0;
 
-        $(getCell(row, column)).removeClass(pieceClass).addClass("EMPTY"); //empty the old cell
+        emptyCell(row, column) //remove the piece from the current cell
 
         $(cell).removeClass("EMPTY").addClass(pieceClass); //place the piece to the new cell
     }
@@ -198,21 +253,27 @@ function movePieceTo(piece, i, j) { //передвинуть фигуру piece 
 }
 
 function showPathPawn(i, j) { //подсветить путь для пешки
-    if (i===6){
+    if (i===6) {
         var row = i-1,
         column = j;
     
-    while (inBounds(row, column) && row >= i-2) { //подсветим путь вперед
-        if (isCellEmpty(row, column)) {           
-            highlightFree(row, column);
-             row--;
-        }
-        else break;
-    }
+	    while (inBounds(row, column) && row >= i-2) { //подсветим путь вперед
+	        if (isCellEmpty(row, column)) {           
+	            markFree(row, column);
+	             row--;
+	        }
+	        else break;
+	    }
     } else {
         if (inBounds(i-1, j)) {
-        if (isCellEmpty(i-1, j)) {highlightFree(i-1, j);}
-    }
+        	if (isCellEmpty(i-1, j)) {markFree(i-1, j);}
+    	}
+    	if(inBounds(i-1, j-1) && isEnemy(i-1, j-1)) {
+	        markVictim(i-1, j-1)
+        }
+        if(inBounds(i-1, j+1) && isEnemy(i-1, j+1)) {
+        	markVictim(i-1, j+1)
+        }	
     }
 }
 
@@ -222,68 +283,98 @@ function showPathRook(i, j) { //подсветить путь для ладьи
     
     while (inBounds(row, column) && row >= 0) { //подсветим путь вперед
         if (isCellEmpty(row, column)) {           
-            highlightFree(row, column);
-             row--;
-        }
-        else break;
+            markFree(row, column);
+            row--;
+        } else {
+        	if (isEnemy(row, column)) {
+        		markVictim(row, column)
+        		break;
+        	}
+        	else break;
+        }      
     }
 
     row = i + 1;
     while (inBounds(row, column) && row <= 7) { //подсветим путь назад
         if (isCellEmpty(row, column)) {           
-            highlightFree(row, column);
+            markFree(row, column);
             row++;
+        } else {
+        	if (isEnemy(row, column)) {
+        		markVictim(row, column)
+        		break;
+        	}
+        	else break;
         }
-        else break;
+       
     }
 
     row = i;
     column = j-1;
     while (inBounds(row, column) && column >= 0) { //подсветим путь влево
         if (isCellEmpty(row, column)) {           
-            highlightFree(row, column);
+            markFree(row, column);
             column--;
-        }
-        else break;
+        } else {
+        	if (isEnemy(row, column)) {
+        		markVictim(row, column)
+        		break;
+        	}
+        	else break;
+        }    
     }
 
     column = j+1;
     while (inBounds(row, column) && column <= 7) { //подсветим путь вправо
         if (isCellEmpty(row, column)) {           
-            highlightFree(row, column);
+            markFree(row, column);
             column++;
+        } else {
+        	if (isEnemy(row, column)) {
+        		markVictim(row, column)
+        		break;
+        	}
+        	else break;
         }
-        else break;
+       
     }    
 }
 function showPathKnight (i, j) { //Подсветить ход коня
     if (inBounds(i-2, j-1)) {
-        if (isCellEmpty(i-2, j-1)) {highlightFree(i-2, j-1);}
+        if (isCellEmpty(i-2, j-1)) {markFree(i-2, j-1);}
+        else if(isEnemy(i-2, j-1)) {markVictim(i-2, j-1);}
     }
 
     if (inBounds(i-1, j-2)) {
-        if (isCellEmpty(i-1, j-2)) {highlightFree(i-1, j-2);}
+        if (isCellEmpty(i-1, j-2)) {markFree(i-1, j-2);}
+        else if(isEnemy(i-1, j-2)) {markVictim(i-1, j-2);}
     }
     if (inBounds(i-2, j+1)) {
-        if (isCellEmpty(i-2, j+1)) {highlightFree(i-2, j+1);}
+        if (isCellEmpty(i-2, j+1)) {markFree(i-2, j+1);}
+        else if(isEnemy(i-2, j+1)) {markVictim(i-2, j+1);}
     }
 
     if (inBounds(i-1, j+2)) {
-        if (isCellEmpty(i-1, j+2)) {highlightFree(i-1, j+2);}
+        if (isCellEmpty(i-1, j+2)) {markFree(i-1, j+2);}
+        else if(isEnemy(i-1, j+2)) {markVictim(i-1, j+2);}
     }
     if (inBounds(i+2, j-1)) {
-        if (isCellEmpty(i+2, j-1)) {highlightFree(i+2, j-1);}
+        if (isCellEmpty(i+2, j-1)) {markFree(i+2, j-1);}
+        else if(isEnemy(i+2, j-1)) {markVictim(i+2, j-1);}
     }
 
     if (inBounds(i+1, j-2)) {
-        if (isCellEmpty(i+1, j-2)) {highlightFree(i+1, j-2);}
+        if (isCellEmpty(i+1, j-2)) {markFree(i+1, j-2);}
+        else if(isEnemy(i+1, j-2)) {markVictim(i+1, j-2);}
     }
     if (inBounds(i+2, j+1)) {
-        if (isCellEmpty(i+2, j+1)) {highlightFree(i+2, j+1);}
+        if (isCellEmpty(i+2, j+1)) {markFree(i+2, j+1);}
+        else if(isEnemy(i+2, j+1)) {markVictim(i+2, j+1);}
     }
 
     if (inBounds(i+1, j+2)) {
-        if (isCellEmpty(i+1, j+2)) {highlightFree(i+1, j+2);}
+        if (isCellEmpty(i+1, j+2)) {markFree(i+1, j+2);}
+        else if(isEnemy(i+1, j+2)) {markVictim(i+1, j+2);}
     }
 }
 
@@ -293,11 +384,16 @@ function showPathBishop(i, j) { // Подсветить ход слона
 
     while (inBounds(row, column) && row >= 0) { //подсветка влево и вверх
         if (isCellEmpty(row, column)) {           
-            highlightFree(row, column);
+            markFree(row, column);
              row--;
              column--;
-        }
-        else break;
+        } else {
+        	if(isEnemy(row, column)) {
+        		markVictim(row, column);
+        		break;
+        	}
+        	else break;
+        }        
     }
 
     row = i-1;
@@ -305,11 +401,16 @@ function showPathBishop(i, j) { // Подсветить ход слона
 
     while (inBounds(row, column) && row >= 0) { //подсветка вправо и вверх
         if (isCellEmpty(row, column)) {           
-            highlightFree(row, column);
+            markFree(row, column);
              row--;
              column++;
-        }
-        else break;
+        } else {
+        	if(isEnemy(row, column)) {
+        		markVictim(row, column);
+        		break;
+        	}
+        	else break;
+        }        
     }
 
     row = i+1;
@@ -317,11 +418,16 @@ function showPathBishop(i, j) { // Подсветить ход слона
 
         while (inBounds(row, column) && row <= 7) { //подсветка влево и вверх
         if (isCellEmpty(row, column)) {           
-            highlightFree(row, column);
+            markFree(row, column);
              row++;
              column--;
-        }
-        else break;
+        } else {
+        	if(isEnemy(row, column)) {
+        		markVictim(row, column);
+        		break;
+        	}
+        	else break;
+        }        
     }
 
     row = i+1;
@@ -329,11 +435,16 @@ function showPathBishop(i, j) { // Подсветить ход слона
 
         while (inBounds(row, column) && row <= 7) { //подсветка влево и вверх
         if (isCellEmpty(row, column)) {           
-            highlightFree(row, column);
+            markFree(row, column);
              row++;
              column++;
-        }
-        else break;
+        } else {
+        	if(isEnemy(row, column)) {
+        		markVictim(row, column);
+        		break;
+        	}
+        	else break;
+        }         
     }
 }
 
@@ -343,11 +454,16 @@ function showPathQueen (i, j) { //Подсветка королевы
 
     while (inBounds(row, column) && row >= 0) { //подсветка влево и вверх
         if (isCellEmpty(row, column)) {           
-            highlightFree(row, column);
+            markFree(row, column);
              row--;
              column--;
-        }
-        else break;
+        } else {
+        	if (isEnemy(row, column)) {
+        		markVictim(row, column)
+        		break
+        	} 
+        	else break;
+        }        
     }
 
     row = i-1;
@@ -355,11 +471,16 @@ function showPathQueen (i, j) { //Подсветка королевы
 
     while (inBounds(row, column) && row >= 0) { //подсветка вправо и вверх
         if (isCellEmpty(row, column)) {           
-            highlightFree(row, column);
+            markFree(row, column);
              row--;
              column++;
-        }
-        else break;
+        } else {
+        	if (isEnemy(row, column)) {
+        		markVictim(row, column)
+        		break
+        	} 
+        	else break;
+        }   
     }
 
     row = i+1;
@@ -367,11 +488,16 @@ function showPathQueen (i, j) { //Подсветка королевы
 
         while (inBounds(row, column) && row <= 7) { //подсветка влево и вверх
         if (isCellEmpty(row, column)) {           
-            highlightFree(row, column);
+            markFree(row, column);
              row++;
              column--;
-        }
-        else break;
+        } else {
+        	if (isEnemy(row, column)) {
+        		markVictim(row, column)
+        		break
+        	} 
+        	else break;
+        }   
     }
 
     row = i+1;
@@ -379,11 +505,16 @@ function showPathQueen (i, j) { //Подсветка королевы
 
         while (inBounds(row, column) && row <= 7) { //подсветка влево и вверх
         if (isCellEmpty(row, column)) {           
-            highlightFree(row, column);
+            markFree(row, column);
              row++;
              column++;
-        }
-        else break;
+        } else {
+        	if (isEnemy(row, column)) {
+        		markVictim(row, column)
+        		break
+        	} 
+        	else break;
+        }   
     }
 
     row = i-1,
@@ -391,69 +522,98 @@ function showPathQueen (i, j) { //Подсветка королевы
     
     while (inBounds(row, column) && row >= 0) { //подсветим путь вперед
         if (isCellEmpty(row, column)) {           
-            highlightFree(row, column);
+            markFree(row, column);
              row--;
-        }
-        else break;
+        } else {
+        	if (isEnemy(row, column)) {
+        		markVictim(row, column)
+        		break
+        	} 
+        	else break;
+        }   
     }
 
     row = i + 1;
     while (inBounds(row, column) && row <= 7) { //подсветим путь назад
         if (isCellEmpty(row, column)) {           
-            highlightFree(row, column);
+            markFree(row, column);
             row++;
-        }
-        else break;
+        } else {
+        	if (isEnemy(row, column)) {
+        		markVictim(row, column)
+        		break
+        	} 
+        	else break;
+        }   
     }
 
     row = i;
     column = j-1;
     while (inBounds(row, column) && column >= 0) { //подсветим путь влево
         if (isCellEmpty(row, column)) {           
-            highlightFree(row, column);
+            markFree(row, column);
             column--;
-        }
-        else break;
+        } else {
+        	if (isEnemy(row, column)) {
+        		markVictim(row, column)
+        		break
+        	} 
+        	else break;
+        }   
     }
 
     column = j+1;
     while (inBounds(row, column) && column <= 7) { //подсветим путь вправо
         if (isCellEmpty(row, column)) {           
-            highlightFree(row, column);
+            markFree(row, column);
             column++;
-        }
-        else break;
+        } else {
+        	if (isEnemy(row, column)) {
+        		markVictim(row, column)
+        		break
+        	} 
+        	else break;
+        }   
     }    
 }
 
 function showPathKing (i, j){
     if (inBounds(i-1, j)) {
-        if (isCellEmpty(i-1, j)) {highlightFree(i-1, j);}
+        if (isCellEmpty(i-1, j)) {markFree(i-1, j);}
+        else if(isEnemy(i-1, j)) {markVictim(i-1, j);}
     }
 
     if (inBounds(i+1, j)) {
-        if (isCellEmpty(i+1, j)) {highlightFree(i+1, j);}
+        if (isCellEmpty(i+1, j)) {markFree(i+1, j);}
+        else if(isEnemy(i+1, j)) {markVictim(i+1, j);}
+
     }
     if (inBounds(i, j+1)) {
-        if (isCellEmpty(i, j+1)) {highlightFree(i, j+1);}
+        if (isCellEmpty(i, j+1)) {markFree(i, j+1);}
+        else if(isEnemy(i, j+1)) {markVictim(i, j+1);}
     }
 
     if (inBounds(i, j-1)) {
-        if (isCellEmpty(i, j-1)) {highlightFree(i, j-1);}
+        if (isCellEmpty(i, j-1)) {markFree(i, j-1);}
+        else if(isEnemy(i, j-1)) {markVictim(i, j-1);}
     }
     if (inBounds(i-1, j-1)) {
-        if (isCellEmpty(i-1, j-1)) {highlightFree(i-1, j-1);}
+        if (isCellEmpty(i-1, j-1)) {markFree(i-1, j-1);}
+        else if(isEnemy(i-1, j-1)) {markVictim(i-1, j-1);}
     }
 
     if (inBounds(i+1, j+1)) {
-        if (isCellEmpty(i+1, j+1)) {highlightFree(i+1, j+1);}
+        if (isCellEmpty(i+1, j+1)) {markFree(i+1, j+1);}
+        else if(isEnemy(i+1, j+1)) {markVictim(i+1, j+1);}
     }
-    if (inBounds(i+1, j-1)) {
-        if (isCellEmpty(i+1, j-1)) {highlightFree(i+1, j-1);}
+    if (inBounds(i+1, j+1)) {
+        if (isCellEmpty(i+1, j+1)) {markFree(i+1, j+1);}
+        else if(isEnemy(i+1, j+1)) {markVictim(i+1, j+1);}
     }
 
-    if (inBounds(i-1, j+1)) {
-        if (isCellEmpty(i-1, j+1)) {highlightFree(i-1, j+1);}
+    if (inBounds(i+1, j+1)) {
+        if (isCellEmpty(i+1, j+1)) {markFree(i+1, j+1);}
+        else if(isEnemy(i+1, j+1)) {markVictim(i+1, j+1);}
     }
 }
 
