@@ -4,10 +4,42 @@
     <meta charset="UTF-8">
     <title>Tien's Javascipt Chess</title>
     <link rel="stylesheet" type="text/css" href="css/style.css">
-</head>
     <script src = "http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"> </script>
+    <script src="http://cdn.peerjs.com/0.3/peer.min.js"></script>
+</head>
+
 <body>
-<div id='board'></div>
-</body>
-<script src="main.js"></script>
+	<div class ="container">
+		<div id='board'></div>
+		<div id="startDialog">
+		    <div class="inner">
+		    	<div id="welcomeSign">
+					<h1>Welcome!</h1>
+					<label for="peerid">Enter a room id:</label>
+					<input id="peerid" type="text" placeholder="paste it here">
+					<input id="join" type="submit" value="join" />
+					<label for="create">or </label>
+					<input id="create" type="submit" value="create a room" />
+				</div>
+				<div id="connectingSign">
+					<h2>Connecting to your mate...</h2>
+				</div>
+				<div id="creatingRoomSign">
+					<h2>Creating a room...</h2>
+				</div>
+				<div id="joiningRoomSign">
+					<h2>Joining the room...</h2>
+				</div>
+				<div id="roomCreatedSign">
+					<h2>Your room id is <span id="newRoomId"></span></h2>
+					<h3>Share it with your friend! Once he is connected, the game will start automatically</h3>
+				</div>				
+				<div id="connectionLostSign">
+					<h2>Connection has been lost! Refresh the page and try again.</h2>
+				</div>
+			</div>
+		</div>
+	</div>
+	<script src="main.js"></script>
+</body>  
 </html>
