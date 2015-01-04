@@ -1,17 +1,20 @@
+//Create your free key at peerJS.com -- don't obuse mine!
+PEERJS_API_KEY = '8l3d9im0wleuerk9'
+
 //Присваиваем каждой фигуре свой код
-var WHITE_KING = 100;
-var WHITE_QUEEN = 90;
-var WHITE_ROOK = 50;
-var WHITE_BISHOP = 31;
-var WHITE_KNIGHT = 30;
-var WHITE_PAWN = 10;
-//Для черных
-var BLACK_KING = -WHITE_KING;
-var BLACK_QUEEN = -WHITE_QUEEN;
-var BLACK_ROOK = -WHITE_ROOK;
-var BLACK_BISHOP = -WHITE_BISHOP;
-var BLACK_KNIGHT = -WHITE_KNIGHT;
-var BLACK_PAWN = -WHITE_PAWN;
+var WHITE_KING = 100,
+      WHITE_QUEEN = 90,
+      WHITE_ROOK = 50,
+      WHITE_BISHOP = 31,
+      WHITE_KNIGHT = 30,
+      WHITE_PAWN = 10;
+
+var BLACK_KING = -WHITE_KING,
+      BLACK_QUEEN = -WHITE_QUEEN,
+      BLACK_ROOK = -WHITE_ROOK,
+      BLACK_BISHOP = -WHITE_BISHOP,
+      BLACK_KNIGHT = -WHITE_KNIGHT,
+      BLACK_PAWN = -WHITE_PAWN;
 
 //Расставляем фигурки
 var board = [
@@ -80,7 +83,7 @@ function showDisconnected() { //в случае ошибки или отключ
 
 var isServer = false //if you create a room -- you are the "server"
 var myTurn = false //if server, this will be set to true
-var dataChannel //to send data between clients 
+var dataChannel //to send data between clients
 
 function doTurn(data) { //оповещает противника о ходе
 	myTurn = false
@@ -105,8 +108,8 @@ function fetchTurn(data) { //получает ход противника
 }
 
 function createPeer() {
-	
-	var peer = new Peer({key: '8l3d9im0wleuerk9'}); //create new peer
+
+	var peer = new Peer({key: PEERJS_API_KEY}); //create new peer
 
 	peer.on('disconnected', function() {
 		console.log("oops, you've been disconnected! We shut down at this point.")
@@ -129,8 +132,9 @@ function createPeer() {
 }
 
 function connectToPeer(peerId, onDataConnectionOpened) {
-	console.log("connecting to peer: "+peerId)
-	
+
+            console.log("connecting to peer: "+peerId)
+
 	var peer = createPeer()
 	var dataConnection = peer.connect(peerId) //connecting to remote peer
 
@@ -142,13 +146,13 @@ function connectToPeer(peerId, onDataConnectionOpened) {
 		console.log("YoHoHo! data channel is ready to use!")
 		dataChannel = dataConnection //global reference
 		if (typeof onDataConnectionOpened == "function") {
-			onDataConnectionOpened(dataConnection)			
+			onDataConnectionOpened(dataConnection)
 		}
-	}); 
+	});
 	dataConnection.on('close', function() { //Emitted when either you or the remote peer closes the data connection. NB: Firefox does not yet support this event.
 		console.log("oops! data channel has been closed! we gonna shut down now...")
 		peer.destroy()
-	}); 
+	});
 	dataConnection.on('error', function(err) {
 		console.log("oops, an error occured with dataConnection: "+err);
 		console.log("we have to shut down now.");
@@ -158,9 +162,9 @@ function connectToPeer(peerId, onDataConnectionOpened) {
 }
 
 function createRoom(onRoomCreated, onDataConnectionOpened) { //создаем peer
-	//onRoomCreated вызывается когда сервер выдаст id лиенту
+	//onRoomCreated вызывается когда сервер выдаст id клиенту
 	//onDataConnectionOpened вызывается когда к клиенту подключится пир
-	//Peer
+
 	isServer = true;
 	myTurn = true;
 
@@ -178,19 +182,19 @@ function createRoom(onRoomCreated, onDataConnectionOpened) { //создаем pe
 			console.log("YoHoHo! data channel is ready to use!")
 			dataChannel = dataConnection //global reference
 			if (typeof onDataConnectionOpened == "function") {
-				onDataConnectionOpened(dataConnection)			
+				onDataConnectionOpened(dataConnection)
 			}
-		}); 
+		});
 		dataConnection.on('close', function() { //Emitted when either you or the remote peer closes the data connection. NB: Firefox does not yet support this event.
 			console.log("oops! data channel has been closed! we gonna shut down now...")
 			peer.destroy()
-		}); 
+		});
 		dataConnection.on('error', function(err) {
 			console.log("oops, an error occured with dataConnection: "+err);
 			console.log("we have to shut down now.");
 			peer.destroy()
 		});
-		
+
 	});
 
 	peer.on('open', function(id) { //the peer gets assigned a random id
@@ -198,7 +202,7 @@ function createRoom(onRoomCreated, onDataConnectionOpened) { //создаем pe
 		if (typeof onRoomCreated == "function") {
 			onRoomCreated(id)
 		}
-	});	
+	});
 }
 
 
@@ -209,7 +213,7 @@ $(function() {
 		if (peerId == "") alert("room id is empty!")
 		else {
 			$("#welcomeSign").hide()
-			$("#joiningRoomSign").show() 
+			$("#joiningRoomSign").show()
 			connectToPeer(peerId, function() { //onDataConnectionOpened
 				console.log("connection opened!")
 				$("#startDialog").hide()
@@ -238,15 +242,13 @@ $(function() {
 
     $("#board").on("click", ".row .column > div", function(e) { //клик на ячейке
 
-    	if (myTurn) {    		
+    	if (myTurn) {
 
 	        if ($(this).hasClass("FREE")) { //если она подсвечена (кликнули на фигуре до этого)
 
 	            var rowColumn = getPieceCords(this)
 	            movePieceTo(selectedPiece, rowColumn[0], rowColumn[1]) //то двигаем ту фигуру в эту ячейу и стираем подсветку
-	           // var oldXY = 
-	            //var data = {newX:rowColumn[0], newY:rowColumn[1]}
-	            cleanUp() 
+	            cleanUp()
 	        }
 
 	        else {
@@ -254,15 +256,14 @@ $(function() {
 	        	if ($(column).hasClass("RED"))  {//класс RED добавлен к родителю чтобы он не загораживал саму фигуру
 	        		var victimIJ = getPieceCords(this)
 	        		eatVictim(selectedPiece, victimIJ[0], victimIJ[1])
-	        		//selectedPiece = null
 	        		cleanUp()
 	        	}
 	        	else if (! $(this).hasClass("EMPTY")) { //если кликнули НЕ по пустой ячейке
 
 		                cleanUp() //стереть подсветку (она присутствует в случе, если до этого кликнули по фигурке)
 
-		                if(selectedPiece == this) { //если нажали на пешку, на которую нажимали в прошлый раз          
-		                    selectedPiece = null          
+		                if(selectedPiece == this) { //если нажали на пешку, на которую нажимали в прошлый раз
+		                    selectedPiece = null
 		                }
 		                else { //если нажали на новую фигурку -- подсветить возможные ходы
 
@@ -272,19 +273,19 @@ $(function() {
 		                        row =rowColumn[0],
 		                        column = rowColumn[1];
 
-		                    
-		                    if (showPathMap[board[row][column]]) { //если функция подсветки для данной фигурки уже есть (ПО ИДЕЕ ДОЛЖНЫ БЫТЬ ДЛЯ ВСЕХ)    
+
+		                    if (showPathMap[board[row][column]]) { //если функция подсветки для данной фигурки уже есть (ПО ИДЕЕ ДОЛЖНЫ БЫТЬ ДЛЯ ВСЕХ)
 		                        showPathMap[board[row][column]](row, column) //подсветить ее путь
 		                    }
 		                    else { //иначе -- сказать, что нужно добавить ее!
 		                        console.log("Добавьте функцию подсветки для фигуры "+getPieceName(board[row][column]))
 		                    }
 		                }
-		            } 
-		            else { //иначе -- стереть подсветку в любом случае
-		                cleanUp()   
 		            }
-	        }
+		            else { //иначе -- стереть подсветку в любом случае
+		                cleanUp()
+		            }
+	             }
         } else {
         	console.log("hold up homie, it's no your turn yet!")
         }
@@ -292,8 +293,8 @@ $(function() {
 })
 
 function containsObject(obj, list) {
-    var i;
-    for (i = 0; i < list.length; i++) {
+
+    for (var i = 0; i < list.length; i++) {
         if (list[i] === obj) {
             return true;
         }
@@ -324,7 +325,7 @@ function getColumn(i, j) {
 
 function getCell(i, j) { //получить html клетки на основе ее координат в матрице
 
-    var cell = $(getColumn(i, j)).children();    
+    var cell = $(getColumn(i, j)).children();
     return cell
 }
 
@@ -339,10 +340,6 @@ function eraseFree() { //убрать зеленую подсветку со в�
     $(cells).each(function(){
        $(this).removeClass("FREE");
     })
-}
-
-function markTaken(i, j) {
-    //$(getCell(i, j)).addClass("TAKEN")
 }
 
 function getPieceCords(piece) { //получить координаты ячейки в матрице по ее html. Возвращает [строка, столбец]
@@ -364,7 +361,7 @@ function isCellEmpty(i, j) { //пустая ли клетка
 function emptyCell(i, j) {
 	var cell = getCell(i, j),
         cellClass = $(cell).attr("class");
-	 
+
 	$(cell).removeClass(cellClass).addClass("EMPTY"); //empty the old cell
 	board[i][j] = 0
 }
@@ -373,11 +370,11 @@ function isEnemy(i, j) {
 	return containsObject(board[i][j], [BLACK_QUEEN, BLACK_BISHOP, BLACK_PAWN, BLACK_KNIGHT, BLACK_ROOK, BLACK_KING])
 }
 
-function eatVictim(winnimgPiece, victimI, victimJ, sendToPeer) {
-	
+function eatVictim(winningPiece, victimI, victimJ, sendToPeer) {
+
 	emptyCell(victimI, victimJ) //remove the victim
 	//INCREASE SCORE COUNTER HERE
-	movePieceTo(winnimgPiece, victimI, victimJ, sendToPeer) 
+	movePieceTo(winningPiece, victimI, victimJ, sendToPeer)
 }
 
 function markVictim(i, j) {
@@ -396,7 +393,7 @@ function cleanUp() {
 }
 
 function movePieceTo(piece, i, j, sendToPeer) { //передвинуть фигуру piece в координаты i, j
-    if (isCellEmpty(i, j) && inBounds(i, j)) {        
+    if (isCellEmpty(i, j) && inBounds(i, j)) {
         var rowColumn = getPieceCords(piece),
             row = rowColumn[0],
             column = rowColumn[1],
@@ -422,9 +419,9 @@ function showPathPawn(i, j) { //подсветить путь для пешки
     if (i===6) {
         var row = i-1,
         column = j;
-    
+
 	    while (inBounds(row, column) && row >= i-2) { //подсветим путь вперед
-	        if (isCellEmpty(row, column)) {           
+	        if (isCellEmpty(row, column)) {
 	            markFree(row, column);
 	             row--;
 	        }
@@ -439,16 +436,16 @@ function showPathPawn(i, j) { //подсветить путь для пешки
         }
         if(inBounds(i-1, j+1) && isEnemy(i-1, j+1)) {
         	markVictim(i-1, j+1)
-        }	
+        }
     }
 }
 
 function showPathRook(i, j) { //подсветить путь для ладьи
     var row = i-1,
         column = j;
-    
+
     while (inBounds(row, column) && row >= 0) { //подсветим путь вперед
-        if (isCellEmpty(row, column)) {           
+        if (isCellEmpty(row, column)) {
             markFree(row, column);
             row--;
         } else {
@@ -457,12 +454,12 @@ function showPathRook(i, j) { //подсветить путь для ладьи
         		break;
         	}
         	else break;
-        }      
+        }
     }
 
     row = i + 1;
     while (inBounds(row, column) && row <= 7) { //подсветим путь назад
-        if (isCellEmpty(row, column)) {           
+        if (isCellEmpty(row, column)) {
             markFree(row, column);
             row++;
         } else {
@@ -472,13 +469,13 @@ function showPathRook(i, j) { //подсветить путь для ладьи
         	}
         	else break;
         }
-       
+
     }
 
     row = i;
     column = j-1;
     while (inBounds(row, column) && column >= 0) { //подсветим путь влево
-        if (isCellEmpty(row, column)) {           
+        if (isCellEmpty(row, column)) {
             markFree(row, column);
             column--;
         } else {
@@ -487,12 +484,12 @@ function showPathRook(i, j) { //подсветить путь для ладьи
         		break;
         	}
         	else break;
-        }    
+        }
     }
 
     column = j+1;
     while (inBounds(row, column) && column <= 7) { //подсветим путь вправо
-        if (isCellEmpty(row, column)) {           
+        if (isCellEmpty(row, column)) {
             markFree(row, column);
             column++;
         } else {
@@ -502,8 +499,8 @@ function showPathRook(i, j) { //подсветить путь для ладьи
         	}
         	else break;
         }
-       
-    }    
+
+    }
 }
 function showPathKnight (i, j) { //Подсветить ход коня
     if (inBounds(i-2, j-1)) {
@@ -549,7 +546,7 @@ function showPathBishop(i, j) { // Подсветить ход слона
         column = j-1;
 
     while (inBounds(row, column) && row >= 0) { //подсветка влево и вверх
-        if (isCellEmpty(row, column)) {           
+        if (isCellEmpty(row, column)) {
             markFree(row, column);
              row--;
              column--;
@@ -559,14 +556,14 @@ function showPathBishop(i, j) { // Подсветить ход слона
         		break;
         	}
         	else break;
-        }        
+        }
     }
 
     row = i-1;
     column = j+1;
 
     while (inBounds(row, column) && row >= 0) { //подсветка вправо и вверх
-        if (isCellEmpty(row, column)) {           
+        if (isCellEmpty(row, column)) {
             markFree(row, column);
              row--;
              column++;
@@ -576,14 +573,14 @@ function showPathBishop(i, j) { // Подсветить ход слона
         		break;
         	}
         	else break;
-        }        
+        }
     }
 
     row = i+1;
     column = j-1;
 
         while (inBounds(row, column) && row <= 7) { //подсветка влево и вверх
-        if (isCellEmpty(row, column)) {           
+        if (isCellEmpty(row, column)) {
             markFree(row, column);
              row++;
              column--;
@@ -593,14 +590,14 @@ function showPathBishop(i, j) { // Подсветить ход слона
         		break;
         	}
         	else break;
-        }        
+        }
     }
 
     row = i+1;
     column =j+1;
 
         while (inBounds(row, column) && row <= 7) { //подсветка влево и вверх
-        if (isCellEmpty(row, column)) {           
+        if (isCellEmpty(row, column)) {
             markFree(row, column);
              row++;
              column++;
@@ -610,7 +607,7 @@ function showPathBishop(i, j) { // Подсветить ход слона
         		break;
         	}
         	else break;
-        }         
+        }
     }
 }
 
@@ -619,7 +616,7 @@ function showPathQueen (i, j) { //Подсветка королевы
         column = j-1;
 
     while (inBounds(row, column) && row >= 0) { //подсветка влево и вверх
-        if (isCellEmpty(row, column)) {           
+        if (isCellEmpty(row, column)) {
             markFree(row, column);
              row--;
              column--;
@@ -627,16 +624,16 @@ function showPathQueen (i, j) { //Подсветка королевы
         	if (isEnemy(row, column)) {
         		markVictim(row, column)
         		break
-        	} 
+        	}
         	else break;
-        }        
+        }
     }
 
     row = i-1;
     column = j+1;
 
     while (inBounds(row, column) && row >= 0) { //подсветка вправо и вверх
-        if (isCellEmpty(row, column)) {           
+        if (isCellEmpty(row, column)) {
             markFree(row, column);
              row--;
              column++;
@@ -644,16 +641,16 @@ function showPathQueen (i, j) { //Подсветка королевы
         	if (isEnemy(row, column)) {
         		markVictim(row, column)
         		break
-        	} 
+        	}
         	else break;
-        }   
+        }
     }
 
     row = i+1;
     column = j-1;
 
         while (inBounds(row, column) && row <= 7) { //подсветка влево и вверх
-        if (isCellEmpty(row, column)) {           
+        if (isCellEmpty(row, column)) {
             markFree(row, column);
              row++;
              column--;
@@ -661,16 +658,16 @@ function showPathQueen (i, j) { //Подсветка королевы
         	if (isEnemy(row, column)) {
         		markVictim(row, column)
         		break
-        	} 
+        	}
         	else break;
-        }   
+        }
     }
 
     row = i+1;
     column =j+1;
 
         while (inBounds(row, column) && row <= 7) { //подсветка влево и вверх
-        if (isCellEmpty(row, column)) {           
+        if (isCellEmpty(row, column)) {
             markFree(row, column);
              row++;
              column++;
@@ -678,69 +675,69 @@ function showPathQueen (i, j) { //Подсветка королевы
         	if (isEnemy(row, column)) {
         		markVictim(row, column)
         		break
-        	} 
+        	}
         	else break;
-        }   
+        }
     }
 
     row = i-1,
         column = j;
-    
+
     while (inBounds(row, column) && row >= 0) { //подсветим путь вперед
-        if (isCellEmpty(row, column)) {           
+        if (isCellEmpty(row, column)) {
             markFree(row, column);
              row--;
         } else {
         	if (isEnemy(row, column)) {
         		markVictim(row, column)
         		break
-        	} 
+        	}
         	else break;
-        }   
+        }
     }
 
     row = i + 1;
     while (inBounds(row, column) && row <= 7) { //подсветим путь назад
-        if (isCellEmpty(row, column)) {           
+        if (isCellEmpty(row, column)) {
             markFree(row, column);
             row++;
         } else {
         	if (isEnemy(row, column)) {
         		markVictim(row, column)
         		break
-        	} 
+        	}
         	else break;
-        }   
+        }
     }
 
     row = i;
     column = j-1;
     while (inBounds(row, column) && column >= 0) { //подсветим путь влево
-        if (isCellEmpty(row, column)) {           
+        if (isCellEmpty(row, column)) {
             markFree(row, column);
             column--;
         } else {
         	if (isEnemy(row, column)) {
         		markVictim(row, column)
         		break
-        	} 
+        	}
         	else break;
-        }   
+        }
     }
 
     column = j+1;
     while (inBounds(row, column) && column <= 7) { //подсветим путь вправо
-        if (isCellEmpty(row, column)) {           
+        if (isCellEmpty(row, column)) {
             markFree(row, column);
             column++;
         } else {
         	if (isEnemy(row, column)) {
         		markVictim(row, column)
         		break
-        	} 
+        	}
         	else break;
-        }   
-    }    
+        }
+    }
 }
 
 function showPathKing (i, j){
@@ -783,9 +780,7 @@ function showPathKing (i, j){
     }
 }
 
-var showPathMap = []; // для удобного доступа к функциям подсветки пути для разных фигур
-                     // не нужно подписываться на клик каждого типа фигурки в отдельности -- 
-                     // при клике на любую фигурку просто определяем ее тип (см.  $("#board").on("click", ".row .column > div"...)
+var showPathMap = [];
 showPathMap[WHITE_PAWN] = showPathPawn;
 showPathMap[WHITE_ROOK] = showPathRook;
 showPathMap[WHITE_KNIGHT] = showPathKnight;
