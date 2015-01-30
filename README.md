@@ -6,7 +6,7 @@ Play chess online with a friend.
   - No server side -- play peer-to-peer thanks to [WebRTC] and [peerJS]
 
 ### Installation
-1) Sign up to [peerJS] and grap your free **API KEY**. Please don't use mine.
+1) Sign up to [peerJS] and grab your free **API KEY**. Please don't use mine.
 
 2) Open **main.js** and replace *PEERJS_API_KEY* with your own key.
 
